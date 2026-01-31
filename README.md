@@ -153,12 +153,12 @@ stateDiagram-v2
 
 ```mermaid
 graph TD
-    A[Game.run()] --> B[Clock tick / update dt]
-    B --> C[Poll events via _get_events()]
+    A[Game.run()] --> B[Clock tick - update dt]
+    B --> C[Poll events via _get_events]
     C --> D{Current State?}
-    D -->|START| E[StartMenu.update & draw]
-    D -->|GAME| F[_update() & _draw()]
-    D -->|PAUSE| G[_draw() then PauseMenu.update & draw]
+    D -->|START| E[StartMenu update and draw]
+    D -->|GAME| F[_update and _draw]
+    D -->|PAUSE| G[_draw then PauseMenu update and draw]
     F --> B
     E --> B
     G --> B
