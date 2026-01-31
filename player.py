@@ -12,6 +12,12 @@ class Player(Entity):
         self.speed = 50
 
     def update(self, dt: float):
+        """
+        The main update method of the Playet
+
+        :param dt: Delta time
+        :type dt: float
+        """
         k = pygame.key.get_pressed()
 
         # since they cancel each other out
@@ -26,7 +32,16 @@ class Player(Entity):
         self.hitbox.topleft = self.pos.xy
 
     def draw(self, display: pygame.Surface):
+        """
+        The main draw method of the Player
+
+        :param screen: The main game surface
+        :type screen: pygame.Surface
+        """
         pygame.draw.rect(display, (255, 0, 0), self.hitbox)
 
     def kill(self):
+        """
+        Sets the player to not alive, to be reaped by the main game loop
+        """
         self.alive = False

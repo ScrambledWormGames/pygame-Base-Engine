@@ -1,13 +1,7 @@
-"""
-The entrypoint to the game.
-"""
 from game import Game
 
 
 def main():
-    """
-    Entrypoint function for the application
-    """
     try:
         this = Game()
         this.run()

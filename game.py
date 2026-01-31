@@ -14,9 +14,6 @@ class Game:
     The main game object.
     """
     def __init__(self):
-        """
-        Game object initialisation
-        """
         pygame.init()
         pygame.font.init()
         print("Pygame Initialised")
@@ -34,7 +31,8 @@ class Game:
 
     def run(self):
         """
-        Starts the main game loop and implements event, update and draw methods.
+        Starts the main game loop and implements
+        event, update and draw methods.
         """
         self.running = True
 
@@ -50,11 +48,11 @@ class Game:
                 self.start_menu.draw(self.screen)
 
             elif self.current_state == GameState.GAME:
-                self.update()
-                self.draw()
+                self._update()
+                self._draw()
 
             elif self.current_state == GameState.PAUSE:
-                self.draw()
+                self._draw()
                 self.pause_menu.update(self.dt)
                 self.pause_menu.draw(self.screen)
 
@@ -74,13 +72,6 @@ class Game:
                     self._handle_keydown(event.key)
 
     def _handle_keydown(self, key):
-        """
-        Handles keydown events within the game object.  
-        Used primarily for game state alterations. 
-
-        :param key: The pressed key
-        :type key: pygame.event.key
-        """
         match self.current_state:
             case GameState.START:
                 if key == pygame.K_RETURN:
@@ -105,14 +96,11 @@ class Game:
                         return
 
     def _restart(self):
-        """
-        Restarts game entities and state
-        """
         for entity in self.game_entities:
             entity.kill()
         self.game_entities.append(Player())
 
-    def update(self):
+    def _update(self):
         """
         The main update method for the game.
         Triggers updates in all attached entities.
@@ -123,7 +111,7 @@ class Game:
         for entity in self.game_entities:
             entity.update(self.dt)
 
-    def draw(self):
+    def _draw(self):
         """
         The main draw method for the game.
         Triggers draw in all attached entities.
