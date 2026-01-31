@@ -1,6 +1,6 @@
 # GameEngineBase
 
-A minimal Python game engine built with **Pygame Community Edition (pygame-ce)**, designed as a base for small 2D games.<br>
+A minimal Python game engine built with **Pygame Community Edition (pygame-ce)**, designed as a base for small 2D games.
 Includes a **state machine**, **entity system**, and **menu abstraction**, allowing rapid prototyping and iteration.
 
 ---
@@ -12,6 +12,7 @@ Includes a **state machine**, **entity system**, and **menu abstraction**, allow
 * **Entity lifecycle:** Entities can be killed (`alive` / `kill()`), automatically removed from the game loop
 * **Frame-independent movement:** `dt` (delta time) for smooth motion
 * **Modular architecture:** Menus and game logic are separated
+* **Explicit engine boundaries:** Public API vs internal engine methods
 * **Safe development environment:** Always use a virtual environment to avoid polluting system Python
 
 ---
@@ -52,11 +53,11 @@ make run     # runs the game inside the venv
 
 ### Manual Setup (if not using Makefile)
 
-Since the virtual environment is **not included** in the repo, you must create it manually:
+Since the virtual environment is **not included** in the repository, it must be created manually:
 
 ```bash
 python3 -m venv venv        # create virtual environment
-source venv/bin/activate    # activate environment
+source venv/bin/activate   # activate environment
 pip install --upgrade pip
 pip install -r requirements.txt
 python main.py
@@ -72,7 +73,7 @@ python main.py
 * **Pause Menu:** Press **Escape** during gameplay
 
   * Navigate with **Up/Down arrows**
-  * Press **Enter** to select an option:
+  * Press **Enter** to select:
 
     * Resume
     * Restart
@@ -85,52 +86,76 @@ python main.py
 
 **`Game`**
 
-The main engine class that orchestrates the game loop, entity updates, and state management.
+The central engine object. This class owns the game loop, state machine, entity lifecycle, and menu coordination.
 
-**Responsibilities:**
+The public surface of the engine is intentionally small; most logic is handled by private internal methods.
 
-* Initializes Pygame and sets up the window
-* Maintains a **state machine** (`current_state`)
-* Handles **game entities** (`update()` / `draw()`)
-* Handles **input events** and menu actions
-* Coordinates **menus** (`StartMenu`, `PauseMenu`)
+### Responsibilities
 
-**Core Methods:**
+* Initializes Pygame and configures the display
+* Maintains the **game state machine** (`GameState`)
+* Manages **entity update and draw cycles**
+* Routes input to the correct system based on state
+* Coordinates **StartMenu** and **PauseMenu**
+* Ensures clean shutdown of Pygame
 
-* `run()` — main game loop with state handling
-* `get_events()` — polls events from Pygame
-* `_handle_keydown(key)` — processes keyboard input according to current state
-* `update()` — updates all alive entities
-* `draw()` — draws all entities to the screen
-* `_restart()` — resets the game entities
-* `close()` — quits Pygame safely
+### Public Methods
+
+* `run()` — starts and maintains the main game loop
+* `close()` — shuts down Pygame cleanly
+
+### Internal (Private) Methods
+
+* `_get_events()` — polls and dispatches Pygame events
+
+* `_handle_keydown(key)`
+  Handles keyboard input based on the current game state.
+
+* `_update()`
+  Updates all alive entities and removes dead ones from the game.
+
+* `_draw()`
+  Draws all active entities to the screen.
+
+* `_restart()`
+  Resets the game by killing existing entities and spawning a fresh player.
+
+These methods are intentionally private to enforce a clear separation between the **engine interface** and **engine internals**.
 
 ---
 
 ## Menus
 
-**`StartMenu`**
+### `StartMenu`
 
 * Displays “Press [Enter] to start”
-* Methods:
+* Stateless and lightweight
 
-  * `update(dt)` — placeholder for future logic
-  * `draw(screen)` — renders the start menu
+**Methods:**
 
-**`PauseMenu`**
+* `update(dt)` — placeholder for future logic
+* `draw(screen)` — renders the start screen
 
-* Displays selectable options: Resume, Restart, Quit Game
-* Highlights the currently selected option
-* Methods:
+### `PauseMenu`
 
-  * `update(dt)` — handles arrow key navigation using `pygame.key.get_just_pressed()`
-  * `draw(screen)` — draws overlay and menu options
+* Displays selectable options:
+
+  * Resume
+  * Restart
+  * Quit Game
+* Highlights the current selection
+* Uses `pygame.key.get_just_pressed()` for clean input handling
+
+**Methods:**
+
+* `update(dt)` — handles menu navigation
+* `draw(screen)` — draws overlay and menu options
 
 ---
 
 ## Entities
 
-**`Entity`**
+### `Entity`
 
 Base class for all game objects.
 
@@ -138,50 +163,61 @@ Base class for all game objects.
 
 * `update(dt)` — update object state
 * `draw(screen)` — render object
-* `kill()` — mark as dead (`alive = False`)
+* `kill()` — mark entity as dead (`alive = False`)
 
-**`Player`**
+### `Player`
 
 * Subclass of `Entity`
-* Handles movement using **WASD keys**
-* Uses delta time for smooth speed independent of frame rate
+* Handles movement using **WASD**
+* Movement is frame-rate independent via delta time
 * Implements `kill()` to integrate with the entity lifecycle
 
 ---
 
 ## Entity Lifecycle
 
-The engine uses a **killable entity pattern**:
+The engine uses a **kill-and-sweep** pattern:
 
 ```python
-entity.kill()        # marks entity as dead
-update() removes dead entities automatically
+entity.kill()   # marks entity as dead
 ```
 
-* Keeps the game loop clean and prevents list-modification issues
-* Useful for dynamic entities like bullets or enemies
+Dead entities are removed automatically during `_update()`:
+
+```python
+self.game_entities = [e for e in self.game_entities if e.alive]
+```
+
+**Why this works well:**
+
+* No mutation of lists during iteration
+* Clean restart logic
+* Scales naturally to enemies, bullets, effects, etc.
 
 ---
 
 ## Extending the Engine
 
-**Adding entities:**
+### Adding Entities
 
-* Subclass `Entity` and implement `update()` and `draw()`
+* Subclass `Entity`
+* Implement `update()` and `draw()`
+* Append to `game_entities`
 
-**Adding states:**
+### Adding States
 
-* Extend `GameState` Enum in `config.py`
-* Handle new states in `Game.run()`
+* Extend `GameState` in `config.py`
+* Handle the new state inside `Game.run()`
 
-**Adding menu options:**
+### Adding Pause Menu Actions
 
-* Update `PauseMenu.options`
-* Extend `_handle_keydown()` for new actions
+* Extend `PauseMenu.options`
+* Add behavior in `_handle_keydown()`
 
-**Restart / reset logic:**
+### Restart Logic
 
-* Use `_restart()` to reset game entities
+* Centralized in `_restart()`
+* Easy to expand for score resets, level reloads, etc.
 
 ---
 
@@ -195,15 +231,18 @@ update() removes dead entities automatically
 
 ## Future Improvements
 
-* Implement **GAMEOVER state** and menu
-* Support **multiple levels** or **scenes**
-* Add **submenus or settings** to PauseMenu
-* Introduce **collision handling** for entities
-* Add **sound and music support**
+* Implement **GAMEOVER** state and menu
+* Scene / level system
+* Collision handling
+* Audio system
+* Save/load support
 
 ---
 
 ## AI Usage
-AI usage is limited to the following items within this project.  All other elements were created by hand.
 
-* README.md (ChatGPT)
+AI usage is limited to the following within this project:
+
+* `README.md` (ChatGPT)
+
+All engine code and architecture were implemented manually.

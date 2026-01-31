@@ -38,7 +38,7 @@ class Game:
 
         while self.running:
             self.dt = self.clock.tick(FPS) / 1000
-            self.get_events()
+            self._get_events()
 
             if not self.running:
                 continue
@@ -58,7 +58,7 @@ class Game:
 
             pygame.display.flip()
 
-    def get_events(self):
+    def _get_events(self):
         """
         Handles main game events
         """
