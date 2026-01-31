@@ -6,6 +6,9 @@ FPS = 60
 
 
 class GameState(Enum):
+    """
+    Provides easier manipulation of the Game state machine
+    """
     START = auto()
     GAME = auto()
     PAUSE = auto()

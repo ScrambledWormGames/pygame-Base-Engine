@@ -15,6 +15,12 @@ class PauseMenu:
         self.font = pygame.font.SysFont(None, 48)
 
     def update(self, dt):
+        """
+        The main update method of the PauseMenu
+
+        :param dt: Delta time
+        :type dt: float
+        """
         k = pygame.key.get_just_pressed()
         if k[pygame.K_DOWN]:
             if self.selected < len(self.options) - 1:
@@ -29,6 +35,12 @@ class PauseMenu:
                 self.selected = len(self.options) - 1
 
     def draw(self, screen):
+        """
+        The main draw method of the PauseMenu
+
+        :param screen: The main game surface
+        :type screen: pygame.Surface
+        """
         self.overlay.fill((0, 0, 120, 50))
         screen.blit(self.overlay, (0, 0))
 

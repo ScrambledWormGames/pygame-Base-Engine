@@ -1,3 +1,6 @@
+"""
+The main game hub.  Most things stem from this file.
+"""
 import pygame
 
 from config import HEIGHT, WIDTH, FPS, GameState
@@ -7,6 +10,9 @@ from player import Player
 
 
 class Game:
+    """
+    The main game object.
+    """
     def __init__(self):
         pygame.init()
         pygame.font.init()
@@ -24,6 +30,10 @@ class Game:
         self.font = pygame.font.SysFont(None, 48)
 
     def run(self):
+        """
+        Starts the main game loop and implements
+        event, update and draw methods.
+        """
         self.running = True
 
         while self.running:
@@ -38,17 +48,20 @@ class Game:
                 self.start_menu.draw(self.screen)
 
             elif self.current_state == GameState.GAME:
-                self.update()
-                self.draw()
+                self._update()
+                self._draw()
 
             elif self.current_state == GameState.PAUSE:
-                self.draw()
+                self._draw()
                 self.pause_menu.update(self.dt)
                 self.pause_menu.draw(self.screen)
 
             pygame.display.flip()
 
     def get_events(self):
+        """
+        Handles main game events
+        """
         for event in pygame.event.get():
             match event.type:
                 case pygame.QUIT:
@@ -87,18 +100,29 @@ class Game:
             entity.kill()
         self.game_entities.append(Player())
 
-    def update(self):
+    def _update(self):
+        """
+        The main update method for the game.
+        Triggers updates in all attached entities.
+        """
         # Remove dead entities.
         self.game_entities = [e for e in self.game_entities if e.alive]
 
         for entity in self.game_entities:
             entity.update(self.dt)
 
-    def draw(self):
+    def _draw(self):
+        """
+        The main draw method for the game.
+        Triggers draw in all attached entities.
+        """
         self.screen.fill((0, 0, 0))
         for entity in self.game_entities:
             entity.draw(self.screen)
 
     def close(self):
+        """
+        Ensures pygame shuts down cleanly
+        """
         pygame.font.quit()
         pygame.quit()
