@@ -1,5 +1,14 @@
 # GameEngineBase
 
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.11%2B-blue" />
+  <a href="https://pypi.org/project/pygame-ce/">
+    <img src="https://img.shields.io/badge/pygame--ce-brightgreen" />
+  </a>
+  <img src="https://img.shields.io/badge/architecture-state--driven-informational" />
+  <img src="https://img.shields.io/badge/status-experimental-orange" />
+</p>
+
 A minimal Python game engine built with **Pygame Community Edition (pygame-ce)**, designed as a base for small 2D games.
 Includes a **state machine**, **entity system**, and **menu abstraction**, allowing rapid prototyping and iteration.
 
@@ -27,6 +36,7 @@ Includes a **state machine**, **entity system**, and **menu abstraction**, allow
 ## File Structure
 
 ```
+
 GameEngineBase/
 │
 ├── config.py        # Window settings, FPS, and game states
@@ -38,7 +48,8 @@ GameEngineBase/
 ├── start.py         # Start menu
 ├── requirements.txt # Dependencies
 ├── Makefile         # Setup and run shortcuts
-```
+
+````
 
 ---
 
@@ -49,7 +60,7 @@ GameEngineBase/
 ```bash
 make setup   # creates venv and installs dependencies
 make run     # runs the game inside the venv
-```
+````
 
 ### Manual Setup (if not using Makefile)
 
@@ -121,6 +132,37 @@ The public surface of the engine is intentionally small; most logic is handled b
   Resets the game by killing existing entities and spawning a fresh player.
 
 These methods are intentionally private to enforce a clear separation between the **engine interface** and **engine internals**.
+
+---
+
+## Game State Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> START
+    START --> GAME : Enter
+    GAME --> PAUSE : Escape
+    PAUSE --> GAME : Resume / Escape
+    PAUSE --> GAME : Restart
+    PAUSE --> [*] : Quit
+```
+
+---
+
+## Main Loop Execution
+
+```mermaid
+flowchart TD
+    A[Game.run()] --> B[Clock tick / dt]
+    B --> C[_get_events()]
+    C --> D{GameState}
+    D -->|START| E[StartMenu.update/draw]
+    D -->|GAME| F[_update + _draw]
+    D -->|PAUSE| G[_draw + PauseMenu]
+    E --> H[pygame.display.flip]
+    F --> H
+    G --> H
+```
 
 ---
 
