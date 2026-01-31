@@ -152,16 +152,16 @@ stateDiagram-v2
 ## Main Loop Execution
 
 ```mermaid
-flowchart TD
-    A[Game.run()] --> B[Clock tick / dt]
-    B --> C[_get_events()]
-    C --> D{GameState}
-    D -->|START| E[StartMenu.update/draw]
-    D -->|GAME| F[_update + _draw]
-    D -->|PAUSE| G[_draw + PauseMenu]
-    E --> H[pygame.display.flip]
-    F --> H
-    G --> H
+graph TD
+    A[Game.run()] --> B[Clock tick / update dt]
+    B --> C[Poll events via _get_events()]
+    C --> D{Current State?}
+    D -->|START| E[StartMenu.update & draw]
+    D -->|GAME| F[_update() & _draw()]
+    D -->|PAUSE| G[_draw() then PauseMenu.update & draw]
+    F --> B
+    E --> B
+    G --> B
 ```
 
 ---
